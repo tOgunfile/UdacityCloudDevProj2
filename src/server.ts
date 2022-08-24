@@ -17,23 +17,27 @@ import { error } from "console";
   // GET /filteredimage?image_url={{URL}}
   // endpoint to filter an image from a public url.
   app.get("/filteredimage", async (req: Request, res: Response) => {
-    const image_url = req.query.image_url.toString();
+    try {
+      const image_url = req.query.image_url.toString();
 
-    // IT SHOULD
-    //    1
-    //    1. validate the image_url query
-    if (!image_url) {
-      res.status(400).send("Insert image url");
+      // IT SHOULD
+      //    1
+      //    1. validate the image_url query
+      if (!image_url) {
+        res.status(400).send("Insert image url");
+      }
+
+      //    2. call filterImageFromURL(image_url) to filter the image
+      const filteredImage = await filterImageFromURL(image_url);
+
+      //    3. send the resulting file in the response
+      res.status(200).sendFile(filteredImage, () => {
+        //    4. deletes any files on the server on finish of the response
+        deleteLocalFiles([filteredImage]);
+      });
+    } catch {
+      res.status(422).send("Uncaught Error!");
     }
-
-    //    2. call filterImageFromURL(image_url) to filter the image
-    const filteredImage = await filterImageFromURL(image_url);
-
-    //    3. send the resulting file in the response
-    res.status(200).sendFile(filteredImage, () => {
-      //    4. deletes any files on the server on finish of the response
-      deleteLocalFiles([filteredImage]);
-    });
   });
   // QUERY PARAMATERS
   //    image_url: URL of a publicly accessible image
